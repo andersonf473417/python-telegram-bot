@@ -171,9 +171,9 @@ def video_sticker_file():
 
 
 @pytest.fixture(scope="module")
-def video_sticker(bot, chat_id):
+async def video_sticker(bot, chat_id):
     with data_file("telegram_video_sticker.webm").open("rb") as f:
-        return bot.send_sticker(chat_id, sticker=f, timeout=50).sticker
+        return (await bot.send_sticker(chat_id, sticker=f, read_timeout=50)).sticker
 
 
 @pytest.fixture

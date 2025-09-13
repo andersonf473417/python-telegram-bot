@@ -9918,7 +9918,8 @@ CUSTOM_EMOJI_IDENTIFIER_LIMIT` custom emoji identifiers can be specified.
                 connect_timeout=connect_timeout,
                 pool_timeout=pool_timeout,
                 api_kwargs=api_kwargs,
-            )
+            ),
+            bot=self,
         )
 
     async def get_business_account_star_balance(
