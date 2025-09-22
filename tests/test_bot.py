@@ -4516,7 +4516,7 @@ class TestBotWithRequest:
         assert record[0].filename == __file__, "Wrong stack level!"
 
     async def test_do_api_request_unknown_method(self, bot):
-        with pytest.raises(EndPointNotFound, match="'unknownEndpoint' not found"):
+        with pytest.raises(EndPointNotFound, match="'unknown_endpoint' not found"):
             await bot.do_api_request("unknown_endpoint")
 
     @pytest.mark.filterwarnings("ignore::telegram.warnings.PTBUserWarning")
@@ -4601,7 +4601,7 @@ class TestBotWithRequest:
     @pytest.mark.filterwarnings("ignore::telegram.warnings.PTBUserWarning")
     @pytest.mark.parametrize("return_type", [Message, None])
     async def test_do_api_request_bool_return_type(self, bot, chat_id, return_type):
-        assert await bot.do_api_request("delete_my_commands", return_type=return_type) is True
+        assert await bot.do_api_request("deleteMessage", chat_id=chat_id, message_id=1, return_type=return_type) is True
 
     async def test_get_star_transactions(self, bot):
         transactions = await bot.get_star_transactions(limit=1)
@@ -4626,8 +4626,8 @@ class TestBotWithRequest:
             chat_id=subscription_channel_id, invite_link=sub_link, name="sub_name_2"
         )
         assert edited_link.name == "sub_name_2"
-        assert sub_link.subscription_period == 2592000
-        assert sub_link.subscription_price == 13
+        assert edited_link.subscription_period == 2592000
+        assert edited_link.subscription_price == 13
 
     async def test_get_my_star_balance(self, bot):
         balance = await bot.get_my_star_balance()

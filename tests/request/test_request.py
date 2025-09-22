@@ -529,6 +529,24 @@ class TestHTTPXRequestWithoutRequest:
 
         assert self.test_flag == "stop"
 
+    async def test_context_manager_exception_on_init(self, monkeypatch):
+        async def initialize():
+            raise RuntimeError("initialize")
+
+        async def aclose(*args):
+            self.test_flag = "stop"
+
+        httpx_request = NonchalantHttpxRequest()
+
+        monkeypatch.setattr(httpx_request, "initialize", initialize)
+        monkeypatch.setattr(httpx.AsyncClient, "aclose", aclose)
+
+        with pytest.raises(RuntimeError, match="initialize"):
+            async with httpx_request:
+                pass
+
+        assert self.test_flag == "stop"
+
     async def test_do_request_default_timeouts(self, monkeypatch):
         default_timeouts = httpx.Timeout(connect=42, read=43, write=44, pool=45)
 
