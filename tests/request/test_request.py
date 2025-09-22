@@ -791,7 +791,8 @@ class TestHTTPXRequestWithRequest:
             )
         )
         done, pending = await asyncio.wait({task_1, task_2}, return_when=asyncio.FIRST_COMPLETED)
-        assert len(done) == len(pending) == 1
+        assert len(done) == 1
+        assert len(pending) == 1
         done, pending = await asyncio.wait({task_1, task_2}, return_when=asyncio.ALL_COMPLETED)
         assert len(done) == 2
         assert len(pending) == 0
