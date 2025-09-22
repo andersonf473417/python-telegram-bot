@@ -777,29 +777,27 @@ class TestHTTPXRequestWithRequest:
             )
             assert resp.http_version == "HTTP/1.1"
 
-    async def test_do_request_wait_for_pool(self, httpx_request):
+    async def test_do_request_wait_for_pool(self):
         """The pool logic is buried rather deeply in httpxcore, so we make actual requests here
         instead of mocking"""
-        task_1 = asyncio.create_task(
-            httpx_request.do_request(
-                method="GET", url="https://python-telegram-bot.org/static/testfiles/telegram.mp4"
+        url = "https://python-telegram-bot.org/static/testfiles/telegram.mp4"
+        async with HTTPXRequest(connection_pool_size=1) as httpx_request:
+            task_1 = asyncio.create_task(httpx_request.do_request(method="GET", url=url))
+            # give task_1 the chance to acquire the only connection of the pool
+            await asyncio.sleep(0)
+            task_2 = asyncio.create_task(httpx_request.do_request(method="GET", url=url))
+
+            done, pending = await asyncio.wait(
+                {task_1, task_2}, return_when=asyncio.ALL_COMPLETED
             )
-        )
-        task_2 = asyncio.create_task(
-            httpx_request.do_request(
-                method="GET", url="https://python-telegram-bot.org/static/testfiles/telegram.mp4"
-            )
-        )
-        done, pending = await asyncio.wait({task_1, task_2}, return_when=asyncio.FIRST_COMPLETED)
-        assert len(done) == len(pending) == 1
-        done, pending = await asyncio.wait({task_1, task_2}, return_when=asyncio.ALL_COMPLETED)
-        assert len(done) == 2
-        assert len(pending) == 0
-        try:  # retrieve exceptions from tasks
-            task_1.exception()
-            task_2.exception()
-        except (asyncio.CancelledError, asyncio.InvalidStateError):
-            pass
+            assert len(done) == 2
+            assert len(pending) == 0
+
+            # Both requests must succeed even though they had to share a single connection
+            status_1, _ = task_1.result()
+            status_2, _ = task_2.result()
+            assert status_1 == 200
+            assert status_2 == 200
 
     async def test_input_file_postponed_read(self, bot, chat_id):
         """Here we test that `read_file_handle=False` is correctly handled by HTTPXRequest.
